@@ -53,7 +53,7 @@ class ConfirmedClientResolver @Inject()(identify: IdentifierAction,
   def resolve: Action[AnyContent] = identify.async { implicit request =>
     throttlingService.throttled(AgentStartOfJourneyThrottle) {
       getEligibilityStatusService.getEligibilityStatus flatMap {
-        case EligibilityStatus(false, false) =>
+        case EligibilityStatus(false, false, _) =>
           for {
             nino <- ninoService.getNino
             utr <- utrService.getUTR
@@ -70,7 +70,7 @@ class ConfirmedClientResolver @Inject()(identify: IdentifierAction,
               .removingFromSession(FailedClientMatching)
               .clearUserDetailsExceptName
           }
-        case EligibilityStatus(thisYear, _) =>
+        case EligibilityStatus(thisYear, _, _) =>
           for {
             result <- goToSignUpClient(
               arn = request.arn,
